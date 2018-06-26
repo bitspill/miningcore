@@ -182,6 +182,7 @@ namespace MiningCore.Blockchain.Bitcoin
         public const string SendMany = "sendmany";
         public const string WalletPassphrase = "walletpassphrase";
         public const string WalletLock = "walletlock";
+        public const string SignMessage = "signmessage";
 
         // Legacy commands
         public const string GetInfo = "getinfo";

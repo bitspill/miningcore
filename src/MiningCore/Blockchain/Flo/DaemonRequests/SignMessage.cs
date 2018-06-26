@@ -1,4 +1,4 @@
-﻿/*
+/*
 Copyright 2017 Coin Foundry (coinfoundry.org)
 Authors: Oliver Weichhold (oliver@weichhold.com)
 
@@ -20,20 +20,21 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using Newtonsoft.Json;
 
-namespace MiningCore.Blockchain.Flo.Configuration
+namespace MiningCore.Blockchain.Flo.DaemonRequests
 {
-    public class FloPoolConfigExtra
+    public class SignMessage
     {
-        [JsonProperty("floData")]
-        public string FloData { get; set; }
+        /// <summary>
+        /// the address corresponding to the private key to sign with
+        /// </summary>
+        [JsonProperty("address")]
+        public string Address { get; set; }
         
-        [JsonProperty("historianEnabled")]
-        public bool? HistorianEnabled { get; set; }
-        
-        [JsonProperty("historianAddress")]
-        public string HistorianAddress { get; set; }
-        
-        [JsonProperty("historianUrl")]
-        public string HistorianUrl { get; set; }
+        /// <summary>
+        /// the message to sign
+        /// </summary>
+        [JsonProperty("message")]
+        public string Message { get; set; }
+
     }
 }

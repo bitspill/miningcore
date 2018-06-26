@@ -59,8 +59,18 @@ namespace MiningCore.Blockchain.Flo
 
             extraConfig = poolConfig.Extra.SafeExtensionDataAs<FloPoolConfigExtra>();
 
-            if (string.IsNullOrEmpty(extraConfig?.FloData))
-                logger.ThrowLogPoolStartupException("Pool coinbase FloData is not configured", LogCat);
+            if (extraConfig?.HistorianEnabled.HasValue == true && extraConfig?.HistorianEnabled.Value == true)
+            {
+                if (string.IsNullOrEmpty(extraConfig?.HistorianAddress))
+                    logger.ThrowLogPoolStartupException("Pool historian address is not configured", LogCat);
+                if (string.IsNullOrEmpty(extraConfig?.HistorianUrl))
+                    logger.ThrowLogPoolStartupException("Pool historian url is not configured", LogCat);
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(extraConfig?.FloData))
+                    logger.ThrowLogPoolStartupException("Pool coinbase FloData is not configured", LogCat);
+            }
             
         }
 

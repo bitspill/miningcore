@@ -19,17 +19,25 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 using System;
+using System.IO;
+using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Autofac;
+using MiningCore.Api.Responses;
 using MiningCore.Blockchain.Bitcoin;
-using MiningCore.Blockchain.Bitcoin.Configuration;
 using MiningCore.Blockchain.Bitcoin.DaemonResponses;
 using MiningCore.Blockchain.Flo.Configuration;
+using MiningCore.Blockchain.Flo.DaemonRequests;
+using MiningCore.Blockchain.Flo.Historian;
+using MiningCore.Blockchain.Flo.Oip;
 using MiningCore.Configuration;
 using MiningCore.Extensions;
 using MiningCore.Notifications;
 using MiningCore.Time;
+using Newtonsoft.Json;
 using NLog;
+using ProtoBuf;
 
 namespace MiningCore.Blockchain.Flo
 {
@@ -45,7 +53,72 @@ namespace MiningCore.Blockchain.Flo
         }
 
         protected FloPoolConfigExtra extraFloPoolConfig;
-        
+        protected bool historianEnabled;
+        protected string historianAddress;
+        protected string historianUrl;
+        protected string floData;
+
+        protected async Task<HistorianDataPoint> FetchHistorian()
+        {
+            using (var client = new HttpClient())
+            {
+                var responseString = await client.GetStringAsync(historianUrl);
+                var dp = JsonConvert.DeserializeObject<Datapoint>(responseString);
+
+                var apiUrl = $"http://127.0.0.1:4000/api/pools/{poolConfig.Id}";
+                var apiResponse = await client.GetStringAsync(apiUrl);
+                var pi = JsonConvert.DeserializeObject<GetPoolResponse>(apiResponse).Pool;
+
+                var pbdp = new HistorianDataPoint
+                {
+                    Version = 1,
+                    AutominerPoolHashrate = pi.PoolStats.PoolHashrate,
+                    FloNetHashRate = pi.NetworkStats.NetworkHashrate,
+                    LtcMarketPriceUSD = dp.cmcLtcUsd,
+                    MiningRigRentalsLast10 = dp.mrrLast10,
+                    MiningRigRentalsLast24Hr = dp.mrrLast24hr,
+                    FloMarketPriceBTC = dp.weightedBtc,
+                    FloMarketPriceUSD = dp.weightedUsd,
+                    PubKey = Encoding.UTF8.GetBytes(historianAddress)
+                };
+
+                return pbdp;
+            }
+        }
+
+        protected async Task<SignedMessage> FetchAndSignHistorian()
+        {
+            var hist = await FetchHistorian();
+
+            var serializedMessage = new MemoryStream();
+            Serializer.Serialize(serializedMessage, hist);
+
+
+            var result = await daemon.ExecuteCmdAnyAsync<string>(BitcoinCommands.SignMessage,
+                new SignMessage
+                {
+                    Address = historianAddress,
+                    Message = Convert.ToBase64String(serializedMessage.ToArray())
+                });
+
+            if (result.Error != null)
+            {
+                logger.Warn(() =>
+                    $"[{LogCat}] Unable to sign historian. Daemon responded with: {result.Error.Message} Code {result.Error.Code}");
+                return null;
+            }
+
+            var signed = new SignedMessage
+            {
+                MessageType = SignedMessage.MessageTypes.Historian,
+                PubKey = Encoding.UTF8.GetBytes(historianAddress),
+                SerializedMessage = serializedMessage.ToArray(),
+                Signature = Convert.FromBase64String(result.Response),
+                SignatureType = SignedMessage.SignatureTypes.Flo
+            };
+            return signed;
+        }
+
         #region Overrides
 
         protected override string LogCat => "Flo Job Manager";
@@ -53,6 +126,25 @@ namespace MiningCore.Blockchain.Flo
         public override void Configure(PoolConfig poolConfig, ClusterConfig clusterConfig)
         {
             extraFloPoolConfig = poolConfig.Extra.SafeExtensionDataAs<FloPoolConfigExtra>();
+
+            if (extraPoolConfig?.MaxActiveJobs.HasValue == true)
+                maxActiveJobs = extraPoolConfig.MaxActiveJobs.Value;
+
+            if (extraFloPoolConfig?.HistorianEnabled.HasValue == true &&
+                extraFloPoolConfig?.HistorianEnabled.Value == true)
+            {
+                historianEnabled = true;
+                historianUrl = extraFloPoolConfig.HistorianUrl;
+                historianAddress = extraFloPoolConfig.HistorianAddress;
+            }
+            else
+            {
+                historianEnabled = false;
+            }
+            
+            floData = !string.IsNullOrEmpty(extraFloPoolConfig?.FloData)
+                ? extraFloPoolConfig.FloData
+                : "Mined by MiningCore";
 
             base.Configure(poolConfig, clusterConfig);
         }
@@ -66,9 +158,25 @@ namespace MiningCore.Blockchain.Flo
                 if (forceUpdate)
                     lastJobRebroadcast = clock.Now;
 
-                var response = string.IsNullOrEmpty(json) ?
-                    await GetBlockTemplateAsync() :
-                    GetBlockTemplateFromJson(json);
+                var response = string.IsNullOrEmpty(json) ? await GetBlockTemplateAsync() : GetBlockTemplateFromJson(json);
+
+                var jobFloData = floData;
+
+                if (historianEnabled)
+                {
+                    try
+                    {
+                        var hdp = await FetchAndSignHistorian(); 
+                        var ms = new MemoryStream();
+                        Serializer.Serialize(ms, hdp);
+                        jobFloData = "p64:" + Convert.ToBase64String(ms.ToArray());
+                    }
+                    catch (Exception e)
+                    {
+                        logger.Warn(e, $"[{LogCat}] Failure generating historian message.");
+                        jobFloData = floData;
+                    }
+                }
 
                 // may happen if daemon is currently not connected to peers
                 if (response.Error != null)
@@ -92,7 +200,7 @@ namespace MiningCore.Blockchain.Flo
                     job.Init(blockTemplate, NextJobId(),
                         poolConfig, clusterConfig, clock, poolAddressDestination, networkType, isPoS,
                         ShareMultiplier, extraPoolPaymentProcessingConfig?.BlockrewardMultiplier ?? 1.0m,
-                        coinbaseHasher, headerHasher, blockHasher, extraFloPoolConfig.FloData);
+                        coinbaseHasher, headerHasher, blockHasher, jobFloData);
 
                     lock (jobLock)
                     {
