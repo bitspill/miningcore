@@ -77,6 +77,8 @@ namespace MiningCore.Blockchain.Flo
                     LtcMarketPriceUSD = dp.cmcLtcUsd,
                     MiningRigRentalsLast10 = dp.mrrLast10,
                     MiningRigRentalsLast24Hr = dp.mrrLast24hr,
+                    NiceHashLast = dp.nhLast,
+                    NiceHash24hr= dp.nh24Hr,
                     FloMarketPriceBTC = dp.weightedBtc,
                     FloMarketPriceUSD = dp.weightedUsd,
                     PubKey = Encoding.UTF8.GetBytes(historianAddress)

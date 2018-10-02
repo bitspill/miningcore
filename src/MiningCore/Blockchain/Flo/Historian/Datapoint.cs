@@ -101,6 +101,18 @@ namespace MiningCore.Blockchain.Flo.Historian
         /// </summary>
         [JsonProperty("mrr_last_24hr")]
         public double mrrLast24hr { get; set; }
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        [JsonProperty("nh_last")]
+        public double nhLast { get; set; }
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        [JsonProperty("nh_24hr")]
+        public double nh24Hr { get; set; }
 
     }
 }

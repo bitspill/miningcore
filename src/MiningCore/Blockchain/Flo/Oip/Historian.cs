@@ -14,6 +14,8 @@ namespace MiningCore.Blockchain.Flo.Oip
         [ProtoMember(7)] public double FloMarketPriceBTC { get; set; }
         [ProtoMember(8)] public double FloMarketPriceUSD { get; set; }
         [ProtoMember(9)] public double LtcMarketPriceUSD { get; set; }
+        [ProtoMember(10)] public double NiceHashLast { get; set; }
+        [ProtoMember(11)] public double NiceHash24hr { get; set; }
     }
 
     [ProtoContract]
