@@ -75,7 +75,7 @@ namespace Miningcore.Mining
             this.messageBus = messageBus;
         }
 
-        protected PoolStats poolStats = new PoolStats();
+        public PoolStats poolStats = new PoolStats();
         protected readonly JsonSerializerSettings serializerSettings;
         protected readonly IConnectionFactory cf;
         protected readonly IStatsRepository statsRepo;

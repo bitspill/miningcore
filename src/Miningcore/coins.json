@@ -438,6 +438,39 @@
       "explorerTxLink": "https://florincoin.info/tx/{0}",
       "explorerAccountLink": "https://florincoin.info/address/{0}"
     },
+    "flo-hist": {
+      "name": "flo-hist",
+      "symbol": "FLO",
+      "family": "bitcoin",
+      "subfamily": "floHistorian",
+      "coinbaseHasher": {
+        "hash": "sha256d"
+      },
+      "headerHasher": {
+        "hash": "scrypt",
+        "args": [ 1024, 1 ]
+      },
+      "blockHasher": {
+        "hash": "reverse",
+        "args": [{ "hash": "sha256d" }]
+      },
+      "posBlockHasher": {
+        "hash": "reverse",
+        "args": [
+          {
+            "hash": "scrypt",
+            "args": [ 1024, 1 ]
+          }
+        ]
+      },
+      "coinbaseTxVersion": 2,
+      "coinbaseTxAppendData": "Flo Historian Miningcore",
+      "shareMultiplier": 65536,
+      "hashrateMultiplier": 1.5,
+      "explorerBlockLink": "https://florincoin.info/block/0",
+      "explorerTxLink": "https://florincoin.info/tx/{0}",
+      "explorerAccountLink": "https://florincoin.info/address/{0}"
+    },
     "digibyte-sha256": {
       "name": "Digibyte-Sha256",
       "symbol": "DGB",

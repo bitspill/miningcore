@@ -26,12 +26,14 @@ using System.Threading.Tasks;
 using Autofac;
 using Miningcore.Blockchain.Bitcoin.Configuration;
 using Miningcore.Blockchain.Bitcoin.DaemonResponses;
+using Miningcore.Blockchain.Bitcoin.FloHistorian;
 using Miningcore.Configuration;
 using Miningcore.Contracts;
 using Miningcore.DaemonInterface;
 using Miningcore.Extensions;
 using Miningcore.JsonRpc;
 using Miningcore.Messaging;
+using Miningcore.Mining;
 using Miningcore.Notifications.Messages;
 using Miningcore.Stratum;
 using Miningcore.Time;
@@ -46,8 +48,9 @@ namespace Miningcore.Blockchain.Bitcoin
             IComponentContext ctx,
             IMasterClock clock,
             IMessageBus messageBus,
-            IExtraNonceProvider extraNonceProvider) :
-            base(ctx, clock, messageBus, extraNonceProvider)
+            IExtraNonceProvider extraNonceProvider,
+            PoolBase pool) :
+            base(ctx, clock, messageBus, extraNonceProvider, pool)
         {
         }
 
@@ -77,11 +80,13 @@ namespace Miningcore.Blockchain.Bitcoin
 
         private BitcoinJob CreateJob()
         {
-            //switch (coin.Subfamily)
-            //{
-            //}
-
-            return new BitcoinJob();
+            switch (coin.Subfamily)
+            {
+                case BitcoinSubfamily.FloHistorian:
+                    return new FloHistorianJob(logger, BlockchainStats, daemon, pool);
+                default:
+                    return new BitcoinJob();
+            }
         }
 
         protected override async Task<(bool IsNew, bool Force)> UpdateJob(bool forceUpdate, string via = null, string json = null)

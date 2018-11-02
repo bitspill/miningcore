@@ -110,8 +110,8 @@ namespace Miningcore.Configuration
         [EnumMember(Value = "none")]
         None,
 
-        //[EnumMember(Value = "florincoin")]
-        //Florincoin,
+        [EnumMember(Value = "floHistorian")]
+        FloHistorian,
     }
 
     public partial class BitcoinTemplate : CoinTemplate

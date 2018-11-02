@@ -39,6 +39,7 @@ using Miningcore.DaemonInterface;
 using Miningcore.Extensions;
 using Miningcore.JsonRpc;
 using Miningcore.Messaging;
+using Miningcore.Mining;
 using Miningcore.Notifications;
 using Miningcore.Notifications.Messages;
 using Miningcore.Stratum;
@@ -57,7 +58,8 @@ namespace Miningcore.Blockchain.Bitcoin
             IComponentContext ctx,
             IMasterClock clock,
             IMessageBus messageBus,
-            IExtraNonceProvider extraNonceProvider) :
+            IExtraNonceProvider extraNonceProvider,
+            PoolBase pool) :
             base(ctx, messageBus)
         {
             Contract.RequiresNonNull(ctx, nameof(ctx));
@@ -67,6 +69,7 @@ namespace Miningcore.Blockchain.Bitcoin
 
             this.clock = clock;
             this.extraNonceProvider = extraNonceProvider;
+            this.pool = pool;
         }
 
         protected readonly IMasterClock clock;
@@ -84,6 +87,7 @@ namespace Miningcore.Blockchain.Bitcoin
         protected TimeSpan jobRebroadcastTimeout;
         protected BitcoinNetworkType networkType;
         protected IDestination poolAddressDestination;
+        protected readonly PoolBase pool;
 
         protected object[] getBlockTemplateParams =
         {

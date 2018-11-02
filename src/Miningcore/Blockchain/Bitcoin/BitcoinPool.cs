@@ -310,7 +310,8 @@ namespace Miningcore.Blockchain.Bitcoin
         protected override async Task SetupJobManager(CancellationToken ct)
         {
             manager = ctx.Resolve<BitcoinJobManager>(
-                new TypedParameter(typeof(IExtraNonceProvider), new BitcoinExtraNonceProvider()));
+                new TypedParameter(typeof(IExtraNonceProvider), new BitcoinExtraNonceProvider()),
+                new TypedParameter(typeof(PoolBase), this));
 
             manager.Configure(poolConfig, clusterConfig);
 

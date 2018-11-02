@@ -16,6 +16,7 @@ using Miningcore.DaemonInterface;
 using Miningcore.Extensions;
 using Miningcore.JsonRpc;
 using Miningcore.Messaging;
+using Miningcore.Mining;
 using Miningcore.Notifications.Messages;
 using Miningcore.Stratum;
 using Miningcore.Time;
@@ -32,7 +33,8 @@ namespace Miningcore.Blockchain.Equihash
             IComponentContext ctx,
             IMasterClock clock,
             IMessageBus messageBus,
-            IExtraNonceProvider extraNonceProvider) : base(ctx, clock, messageBus, extraNonceProvider)
+            IExtraNonceProvider extraNonceProvider,
+            PoolBase pool) : base(ctx, clock, messageBus, extraNonceProvider, pool)
         {
             getBlockTemplateParams = new object[]
             {

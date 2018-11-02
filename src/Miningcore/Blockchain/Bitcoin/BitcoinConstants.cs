@@ -148,6 +148,7 @@ namespace Miningcore.Blockchain.Bitcoin
         public const string GetBlock = "getblock";
         public const string GetTransaction = "gettransaction";
         public const string SendMany = "sendmany";
+        public const string SignMessage = "signmessage";
         public const string WalletPassphrase = "walletpassphrase";
         public const string WalletLock = "walletlock";
 
