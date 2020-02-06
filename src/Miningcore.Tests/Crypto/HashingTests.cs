@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -209,6 +209,17 @@ namespace Miningcore.Tests.Crypto
             var result = hash.ToHexString();
 
             Assert.Equal("4f048b3d333cb55227ed1f596cacc614459b7820d5007c5de721994d0313fa41", result);
+        }
+
+        [Fact]
+        public void X16R_V2_Hash()
+        {
+            var hasher = new X16R_V2();
+            var hash = new byte[32];
+            hasher.Digest(testValue, hash);
+            var result = hash.ToHexString();
+
+            Assert.Equal("151515", result);
         }
 
         [Fact]

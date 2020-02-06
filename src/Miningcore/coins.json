@@ -370,11 +370,11 @@
             "hash": "sha256d"
         },
         "headerHasher": {
-            "hash": "x16r"
+            "hash": "x16r_v2"
         },
         "blockHasher": {
             "hash": "reverse",
-            "args": [ { "hash": "x16r" } ]
+            "args": [ { "hash": "x16r_v2" } ]
         },
         "shareMultiplier": 256,
         "explorerBlockLink": "https://ravencoin.network/block/$hash$",
